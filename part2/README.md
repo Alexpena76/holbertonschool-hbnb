@@ -1,7 +1,7 @@
 # HBnB Application - Code Documentation
 
 ## Overview
-This is a Flask-based REST API application that implements a vacation rental platform similar to AirBnB. The application follows a layered architecture with clear separation between Presentation, Business Logic, Service, and Persistence layers. It uses the Repository and Facade patterns to ensure maintainability, scalability, and loose coupling between components
+This is a Flask-based REST API application that implements a vacation rental platform similar to AirBnB, the application follows a layered architecture with clear separation between Presentation, Business Logic, Service, and Persistence layers. It uses the Repository and Facade patterns to ensure maintainability, scalability, and loose coupling between components
 
 ## Code Structure
 The implementation consists of a modular design organized across multiple layers:
