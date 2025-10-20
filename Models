@@ -1,0 +1,801 @@
+Q1:
+
+classDiagram
+    class PresentationLayer {
+        <<Package>>
+        +API Endpoints
+        +Services Interface
+        +Request/Response Handlers
+    }
+    
+    class BusinessLogicLayer {
+        <<Package>>
+        +User Model
+        +Place Model
+        +Review Model
+        +Amenity Model
+        +Business Rules
+    }
+    
+    class PersistenceLayer {
+        <<Package>>
+        +Database Interface
+        +Data Access Objects
+        +Repository Pattern
+    }
+    
+    class Facade {
+        <<Interface>>
+        +user_operations()
+        +place_operations()
+        +review_operations()
+        +amenity_operations()
+    }
+    
+    PresentationLayer ..> Facade : uses
+    Facade --> BusinessLogicLayer : coordinates
+    BusinessLogicLayer --> PersistenceLayer : persists data
+
+Q2:
+
+classDiagram
+    class BaseModel {
+        -String id
+        -DateTime created_at
+        -DateTime updated_at
+        +save()
+        +to_dict()
+        +__str__()
+    }
+
+    class User {
+        -String first_name
+        -String last_name
+        -String email
+        -String password
+        -Boolean is_admin
+        +register()
+        +update_profile()
+        +delete_account()
+        +validate_email()
+        +hash_password()
+    }
+
+    class Place {
+        -String title
+        -String description
+        -Float price
+        -Float latitude
+        -Float longitude
+        -String owner_id
+        +create_place()
+        +update_place()
+        +delete_place()
+        +add_amenity()
+        +remove_amenity()
+        +validate_coordinates()
+    }
+
+    class Review {
+        -String place_id
+        -String user_id
+        -Integer rating
+        -String comment
+        +create_review()
+        +update_review()
+        +delete_review()
+        +validate_rating()
+    }
+
+    class Amenity {
+        -String name
+        -String description
+        +create_amenity()
+        +update_amenity()
+        +delete_amenity()
+    }
+
+    BaseModel <|-- User : inherits
+    BaseModel <|-- Place : inherits
+    BaseModel <|-- Review : inherits
+    BaseModel <|-- Amenity : inherits
+    
+    User "1" --> "0..*" Place : owns
+    User "1" --> "0..*" Review : writes
+    Place "1" --> "0..*" Review : receives
+    Place "0..*" --> "0..*" Amenity : has
+
+Q3:
+
+User Registration:
+
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer (API)
+    participant Facade
+    participant UserModel as Business Logic (User)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/users/register
+    Note over Client,API: {first_name, last_name, email, password}
+    
+    API->>Facade: register_user(user_data)
+    Facade->>UserModel: validate_email(email)
+    UserModel-->>Facade: validation result
+    
+    alt Email already exists
+        Facade-->>API: Error: Email already registered
+        API-->>Client: 409 Conflict
+    else Valid email
+        Facade->>UserModel: hash_password(password)
+        UserModel-->>Facade: hashed_password
+        Facade->>UserModel: create_user_instance()
+        UserModel->>UserModel: generate_uuid()
+        UserModel->>UserModel: set_timestamps()
+        Facade->>DB: save_user(user_object)
+        DB-->>Facade: success
+        Facade-->>API: user_created (user_id, created_at)
+        API-->>Client: 201 Created {user_data}
+    end
+
+Place Creation:
+
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer (API)
+    participant Facade
+    participant Auth as Authentication Service
+    participant PlaceModel as Business Logic (Place)
+    participant UserModel as Business Logic (User)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/places
+    Note over Client,API: {title, description, price, lat, lng, amenity_ids}
+    
+    API->>Auth: verify_token(auth_token)
+    Auth-->>API: user_id
+    
+    API->>Facade: create_place(place_data, user_id)
+    Facade->>UserModel: get_user_by_id(user_id)
+    DB->>UserModel: user_data
+    UserModel-->>Facade: user_exists
+    
+    alt User not found
+        Facade-->>API: Error: Unauthorized
+        API-->>Client: 401 Unauthorized
+    else User exists
+        Facade->>PlaceModel: validate_coordinates(lat, lng)
+        PlaceModel-->>Facade: validation result
+        
+        alt Invalid coordinates
+            Facade-->>API: Error: Invalid coordinates
+            API-->>Client: 400 Bad Request
+        else Valid data
+            Facade->>PlaceModel: create_place_instance()
+            PlaceModel->>PlaceModel: generate_uuid()
+            PlaceModel->>PlaceModel: set_timestamps()
+            PlaceModel->>PlaceModel: set_owner_id(user_id)
+            Facade->>DB: save_place(place_object)
+            Facade->>DB: link_amenities(place_id, amenity_ids)
+            DB-->>Facade: success
+            Facade-->>API: place_created (place_id, created_at)
+            API-->>Client: 201 Created {place_data}
+        end
+    end
+
+Review Submission:
+
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer (API)
+    participant Facade
+    participant Auth as Authentication Service
+    participant ReviewModel as Business Logic (Review)
+    participant PlaceModel as Business Logic (Place)
+    participant UserModel as Business Logic (User)
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/places/{place_id}/reviews
+    Note over Client,API: {rating, comment}
+    
+    API->>Auth: verify_token(auth_token)
+    Auth-->>API: user_id
+    
+    API->>Facade: create_review(place_id, user_id, review_data)
+    
+    Facade->>PlaceModel: get_place_by_id(place_id)
+    DB->>PlaceModel: place_data
+    PlaceModel-->>Facade: place_exists
+    
+    alt Place not found
+        Facade-->>API: Error: Place not found
+        API-->>Client: 404 Not Found
+    else Place exists
+        Facade->>ReviewModel: check_existing_review(user_id, place_id)
+        DB->>ReviewModel: review_query_result
+        
+        alt User already reviewed
+            Facade-->>API: Error: Review already exists
+            API-->>Client: 409 Conflict
+        else No existing review
+            Facade->>ReviewModel: validate_rating(rating)
+            ReviewModel-->>Facade: validation result
+            
+            alt Invalid rating
+                Facade-->>API: Error: Rating must be 1-5
+                API-->>Client: 400 Bad Request
+            else Valid review
+                Facade->>ReviewModel: create_review_instance()
+                ReviewModel->>ReviewModel: generate_uuid()
+                ReviewModel->>ReviewModel: set_timestamps()
+                ReviewModel->>ReviewModel: set_user_id(user_id)
+                ReviewModel->>ReviewModel: set_place_id(place_id)
+                Facade->>DB: save_review(review_object)
+                DB-->>Facade: success
+                Facade-->>API: review_created (review_id, created_at)
+                API-->>Client: 201 Created {review_data}
+            end
+        end
+    end
+
+Fetching List Of Places:
+
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer (API)
+    participant Facade
+    participant PlaceModel as Business Logic (Place)
+    participant AmenityModel as Business Logic (Amenity)
+    participant DB as Persistence Layer
+
+    Client->>API: GET /api/places?min_price=100&max_price=500&amenities=wifi,pool
+    Note over Client,API: Query parameters: filters
+    
+    API->>Facade: get_places(filters)
+    Facade->>PlaceModel: build_query(filters)
+    PlaceModel-->>Facade: query_object
+    
+    Facade->>DB: execute_query(query_object)
+    DB-->>Facade: list_of_place_records
+    
+    alt No places found
+        Facade-->>API: empty_list
+        API-->>Client: 200 OK []
+    else Places found
+        loop For each place
+            Facade->>AmenityModel: get_amenities_for_place(place_id)
+            DB->>AmenityModel: amenity_records
+            AmenityModel-->>Facade: amenity_list
+            Facade->>PlaceModel: attach_amenities(place, amenity_list)
+        end
+        
+        Facade->>PlaceModel: format_place_list(places)
+        PlaceModel-->>Facade: formatted_places
+        Facade-->>API: places_with_details
+        API-->>Client: 200 OK {places: [...]}
+    end
+
+Q4:
+
+HBnB Evolution - Technical Documentation
+Table of Contents
+
+Introduction
+High-Level Architecture
+Business Logic Layer
+API Interaction Flow
+Conclusion
+
+
+1. Introduction
+1.1 Project Overview
+HBnB Evolution is a simplified AirBnB-like application that enables users to list properties, browse accommodations, and share reviews. The application supports core functionalities including user management, property listings, review submissions, and amenity associations.
+1.2 Document Purpose
+This technical document provides a comprehensive blueprint for the HBnB Evolution application. It serves as:
+
+A design reference for developers during implementation
+A communication tool for stakeholders to understand system architecture
+A foundation for future enhancements and maintenance
+
+1.3 Document Scope
+This documentation covers:
+
+Three-layer architecture overview
+Detailed business logic entity design
+API interaction workflows
+Design patterns and principles applied
+
+
+2. High-Level Architecture
+2.1 Package Diagram
+mermaidclassDiagram
+    class PresentationLayer {
+        <<Package>>
+        +API Endpoints
+        +Services Interface
+        +Request/Response Handlers
+    }
+    
+    class BusinessLogicLayer {
+        <<Package>>
+        +User Model
+        +Place Model
+        +Review Model
+        +Amenity Model
+        +Business Rules
+    }
+    
+    class PersistenceLayer {
+        <<Package>>
+        +Database Interface
+        +Data Access Objects
+        +Repository Pattern
+    }
+    
+    class Facade {
+        <<Interface>>
+        +user_operations()
+        +place_operations()
+        +review_operations()
+        +amenity_operations()
+    }
+    
+    PresentationLayer ..> Facade : uses
+    Facade --> BusinessLogicLayer : coordinates
+    BusinessLogicLayer --> PersistenceLayer : persists data
+2.2 Layer Descriptions
+Presentation Layer
+
+Responsibility: Handles all user interactions through RESTful API endpoints
+Components: API routes, request validators, response formatters, authentication middleware
+Key Function: Translates HTTP requests into business operations and formats responses
+
+Business Logic Layer
+
+Responsibility: Contains core application logic and business rules
+Components: Entity models (User, Place, Review, Amenity), validation logic, relationship management
+Key Function: Enforces business constraints and manages entity lifecycle
+
+Persistence Layer
+
+Responsibility: Manages data storage and retrieval
+Components: Repository classes, database connection management, query builders
+Key Function: Abstracts database operations from business logic
+
+2.3 Facade Pattern Implementation
+The Facade pattern serves as a unified interface between layers, providing:
+Benefits:
+
+Reduces coupling between layers
+Simplifies complex operations by providing a single entry point
+Makes the system easier to understand and maintain
+Allows layer implementations to change independently
+
+Communication Flow:
+Client Request → API → Facade → Business Logic → Persistence → Database
+                 ↓       ↓           ↓              ↓
+              Response ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+
+3. Business Logic Layer
+3.1 Class Diagram
+mermaidclassDiagram
+    class BaseModel {
+        -String id
+        -DateTime created_at
+        -DateTime updated_at
+        +save()
+        +to_dict()
+        +__str__()
+    }
+
+    class User {
+        -String first_name
+        -String last_name
+        -String email
+        -String password
+        -Boolean is_admin
+        +register()
+        +update_profile()
+        +delete_account()
+        +validate_email()
+        +hash_password()
+    }
+
+    class Place {
+        -String title
+        -String description
+        -Float price
+        -Float latitude
+        -Float longitude
+        -String owner_id
+        +create_place()
+        +update_place()
+        +delete_place()
+        +add_amenity()
+        +remove_amenity()
+        +validate_coordinates()
+    }
+
+    class Review {
+        -String place_id
+        -String user_id
+        -Integer rating
+        -String comment
+        +create_review()
+        +update_review()
+        +delete_review()
+        +validate_rating()
+    }
+
+    class Amenity {
+        -String name
+        -String description
+        +create_amenity()
+        +update_amenity()
+        +delete_amenity()
+    }
+
+    BaseModel <|-- User : inherits
+    BaseModel <|-- Place : inherits
+    BaseModel <|-- Review : inherits
+    BaseModel <|-- Amenity : inherits
+    
+    User "1" --> "0..*" Place : owns
+    User "1" --> "0..*" Review : writes
+    Place "1" --> "0..*" Review : receives
+    Place "0..*" --> "0..*" Amenity : has
+3.2 Entity Descriptions
+BaseModel (Abstract Base Class)
+Purpose: Provides common attributes and methods for all entities
+Key Attributes:
+
+id: UUID4 unique identifier ensuring no duplicate entities
+created_at: Timestamp for audit trails and data tracking
+updated_at: Tracks last modification for versioning
+
+Design Decision: Using inheritance promotes DRY principles and ensures consistent entity behavior across the application.
+
+User Entity
+Purpose: Represents application users (both regular users and administrators)
+Key Attributes:
+
+email: Unique identifier for authentication
+password: Stored as hash for security
+is_admin: Role-based access control flag
+
+Business Rules:
+
+Email must be unique across the system
+Passwords must be hashed before storage (never store plain text)
+Administrators have elevated privileges for system management
+
+Key Methods:
+
+validate_email(): Ensures proper email format using regex
+hash_password(): Uses SHA-256 for secure password storage
+
+
+Place Entity
+Purpose: Represents rental properties listed by users
+Key Attributes:
+
+owner_id: Foreign key establishing user ownership
+latitude/longitude: Geographic coordinates for mapping
+price: Nightly rental rate
+
+Business Rules:
+
+Each place must have exactly one owner
+Coordinates must be valid GPS values (-90 to 90 for latitude, -180 to 180 for longitude)
+Places can have multiple amenities through many-to-many relationship
+
+Key Methods:
+
+validate_coordinates(): Ensures geographic data validity
+add_amenity()/remove_amenity(): Manages place-amenity associations
+
+
+Review Entity
+Purpose: Captures user feedback on places they've visited
+Key Attributes:
+
+place_id: Links review to specific property
+user_id: Links review to author
+rating: Numerical score (1-5 scale)
+
+Business Rules:
+
+Each user can only submit one review per place (prevents spam)
+Rating must be within 1-5 range
+Both place and user must exist in the system
+
+Relationship Note: Review acts as a junction between User and Place, creating a many-to-many relationship with additional data (rating, comment).
+
+Amenity Entity
+Purpose: Represents features available at properties (WiFi, pool, parking, etc.)
+Key Attributes:
+
+name: Short identifier (e.g., "WiFi")
+description: Detailed explanation
+
+Business Rules:
+
+Amenities are reusable across multiple places
+Standard amenity list promotes consistency in listings
+
+Relationship Note: Many-to-many with Place requires a junction table in the persistence layer.
+
+3.3 Relationship Analysis
+Inheritance Relationships (--|>)
+
+All entities inherit from BaseModel
+Ensures consistent ID generation and timestamp management
+Follows SOLID principles (Liskov Substitution Principle)
+
+One-to-Many Relationships
+
+User → Place: A user can own multiple properties
+User → Review: A user can write multiple reviews
+Place → Review: A place can receive multiple reviews
+
+Many-to-Many Relationship
+
+Place ↔ Amenity: Places can have multiple amenities; amenities can belong to multiple places
+Implementation requires junction table: place_amenities(place_id, amenity_id)
+
+3.4 Design Principles Applied
+SOLID Principles:
+
+Single Responsibility: Each class has one clear purpose
+Open/Closed: BaseModel allows extension without modification
+Liskov Substitution: All entities can be treated as BaseModel where appropriate
+Interface Segregation: Methods are specific to each entity's needs
+Dependency Inversion: High-level modules depend on abstractions (BaseModel)
+
+
+4. API Interaction Flow
+4.1 User Registration Sequence
+mermaidsequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade
+    participant UserModel as Business Logic
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/users/register
+    Note over Client,API: {first_name, last_name, email, password}
+    
+    API->>Facade: register_user(user_data)
+    Facade->>UserModel: validate_email(email)
+    UserModel-->>Facade: validation result
+    
+    alt Email already exists
+        Facade-->>API: Error: Email already registered
+        API-->>Client: 409 Conflict
+    else Valid email
+        Facade->>UserModel: hash_password(password)
+        UserModel-->>Facade: hashed_password
+        Facade->>UserModel: create_user_instance()
+        UserModel->>UserModel: generate_uuid()
+        UserModel->>UserModel: set_timestamps()
+        Facade->>DB: save_user(user_object)
+        DB-->>Facade: success
+        Facade-->>API: user_created
+        API-->>Client: 201 Created
+    end
+Purpose: Creates new user accounts with validation and security measures
+Key Steps:
+
+Client submits registration data
+System validates email uniqueness
+Password is hashed for security
+User object created with UUID and timestamps
+Data persisted to database
+Success response returned
+
+Error Handling:
+
+409 Conflict: Email already registered
+400 Bad Request: Invalid data format
+500 Internal Server Error: System failures
+
+
+4.2 Place Creation Sequence
+mermaidsequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade
+    participant Auth
+    participant PlaceModel as Business Logic
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/places
+    Note over Client,API: Authorization: Bearer token
+    
+    API->>Auth: verify_token(auth_token)
+    Auth-->>API: user_id
+    
+    API->>Facade: create_place(place_data, user_id)
+    Facade->>PlaceModel: validate_coordinates(lat, lng)
+    
+    alt Invalid coordinates
+        Facade-->>API: Error
+        API-->>Client: 400 Bad Request
+    else Valid data
+        Facade->>PlaceModel: create_place_instance()
+        PlaceModel->>PlaceModel: generate_uuid()
+        PlaceModel->>PlaceModel: set_owner_id(user_id)
+        Facade->>DB: save_place(place_object)
+        Facade->>DB: link_amenities(place_id, amenity_ids)
+        DB-->>Facade: success
+        Facade-->>API: place_created
+        API-->>Client: 201 Created
+    end
+Purpose: Allows authenticated users to list their properties
+Key Steps:
+
+User authentication via JWT token
+Coordinate validation
+Place object creation with owner assignment
+Amenity associations established
+Data persisted
+Success confirmation
+
+Security Considerations:
+
+Authentication required (401 if missing)
+Owner ID automatically set from authenticated user (prevents impersonation)
+
+
+4.3 Review Submission Sequence
+mermaidsequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade
+    participant ReviewModel as Business Logic
+    participant PlaceModel
+    participant DB as Persistence Layer
+
+    Client->>API: POST /api/places/{place_id}/reviews
+    
+    API->>Facade: create_review(place_id, user_id, data)
+    Facade->>PlaceModel: verify_place_exists(place_id)
+    
+    alt Place not found
+        Facade-->>API: Error
+        API-->>Client: 404 Not Found
+    else Place exists
+        Facade->>ReviewModel: check_duplicate(user_id, place_id)
+        
+        alt Review exists
+            Facade-->>API: Error
+            API-->>Client: 409 Conflict
+        else No duplicate
+            Facade->>ReviewModel: validate_rating(rating)
+            Facade->>ReviewModel: create_review_instance()
+            Facade->>DB: save_review(review_object)
+            DB-->>Facade: success
+            Facade-->>API: review_created
+            API-->>Client: 201 Created
+        end
+    end
+Purpose: Enables users to provide feedback on places
+Key Steps:
+
+Verify place exists (404 if not)
+Check for duplicate review (409 if exists)
+Validate rating is 1-5
+Create and persist review
+Return success
+
+Business Rule Enforcement:
+
+One review per user per place (prevents spam)
+Rating validation ensures data quality
+
+
+4.4 Fetching Places Sequence
+mermaidsequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade
+    participant PlaceModel as Business Logic
+    participant AmenityModel
+    participant DB as Persistence Layer
+
+    Client->>API: GET /api/places?min_price=100&max_price=500
+    
+    API->>Facade: get_places(filters)
+    Facade->>PlaceModel: build_query(filters)
+    Facade->>DB: execute_query(query_object)
+    DB-->>Facade: list_of_places
+    
+    alt No results
+        Facade-->>API: empty_list
+        API-->>Client: 200 OK []
+    else Results found
+        loop For each place
+            Facade->>AmenityModel: get_amenities(place_id)
+            DB->>AmenityModel: amenity_data
+            AmenityModel-->>Facade: amenities_list
+        end
+        Facade-->>API: enriched_places_data
+        API-->>Client: 200 OK {places: [...]}
+    end
+Purpose: Allows users to search and browse available properties
+Key Steps:
+
+Parse query parameters (price range, amenities, etc.)
+Build filtered database query
+Execute query and retrieve matching places
+Enrich results with associated amenities
+Return formatted list
+
+Query Optimization:
+
+Filter at database level for performance
+Batch amenity loading reduces database calls
+Empty results return 200 (not an error condition)
+
+
+4.5 Common Patterns Across All APIs
+Request Flow:
+Client → API → Facade → Business Logic → Persistence → Database
+Response Flow:
+Database → Persistence → Business Logic → Facade → API → Client
+Validation Layers:
+
+Presentation Layer: Format validation (JSON structure, required fields)
+Business Logic Layer: Business rule validation (email format, coordinate ranges)
+Persistence Layer: Data integrity constraints
+
+Error Response Format:
+json{
+    "error": "Human-readable error message"
+}
+Success Response Format:
+json{
+    "id": "uuid",
+    "attribute": "value",
+    "created_at": "ISO-8601 timestamp"
+}
+
+5. Conclusion
+5.1 Architecture Summary
+The HBnB Evolution application follows a clean three-layer architecture:
+
+Separation of Concerns: Each layer has distinct responsibilities
+Loose Coupling: Layers communicate through well-defined interfaces
+High Cohesion: Related functionality is grouped together
+
+5.2 Key Design Decisions
+Facade Pattern: Simplifies cross-layer communication and reduces dependencies
+Inheritance Hierarchy: BaseModel provides consistent behavior across all entities
+UUID Identification: Ensures globally unique identifiers without database dependencies
+Timestamp Auditing: Automatic tracking of creation and modification times
+Security First: Password hashing and authentication required for sensitive operations
+5.3 Implementation Guidelines
+Phase 1: Implement persistence layer with in-memory storage
+Phase 2: Build business logic models with validation
+Phase 3: Create API endpoints with proper error handling
+Phase 4: Replace in-memory storage with actual database
+5.4 Future Enhancements
+
+Add caching layer for frequently accessed data
+Implement pagination for large result sets
+Add image upload capability for places
+Integrate payment processing
+Implement real-time notifications
+
+5.5 Document Maintenance
+This document should be updated when:
+
+New entities or relationships are added
+API endpoints change
+Architectural decisions are revised
+Business rules are modified
+
+
+Document Version: 1.0
+Last Updated: 2025
+Status: Approved for Implementation
