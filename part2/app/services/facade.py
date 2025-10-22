@@ -142,17 +142,132 @@ class HBnBFacade:
     # ==================== AMENITY METHODS (Placeholders) ====================
     
     def create_amenity(self, amenity_data):
-        """Create a new amenity (to be implemented)"""
-        pass
-    
+        amenity = Amenity(**amenity_data)
+        self.amenity_repo.add(amenity)
+        return amenity
+
     def get_amenity(self, amenity_id):
-        """Retrieve an amenity by ID (to be implemented)"""
-        pass
-    
+        return self.amenity_repo.get(amenity_id)
+
     def get_all_amenities(self):
-        """Retrieve all amenities (to be implemented)"""
-        pass
-    
+        return self.amenity_repo.get_all()
+
     def update_amenity(self, amenity_id, amenity_data):
-        """Update amenity information (to be implemented)"""
-        pass
+        amenity = self.amenity_repo.get(amenity_id)
+        if amenity:
+            self.amenity_repo.update(amenity_id, amenity_data)
+            return amenity
+        return None
+def create_amenity(self, amenity_data):
+    """
+    Create a new amenity
+    
+    Args:
+        amenity_data (dict): Dictionary containing amenity information
+        
+    Returns:
+        Amenity: The newly created amenity object
+        
+    Raises:
+        ValueError: If the amenity data is invalid or amenity name already exists
+    """
+    from app.models.amenity import Amenity
+    
+    # Validate that name is provided
+    if 'name' not in amenity_data or not amenity_data['name']:
+        raise ValueError("Amenity name is required")
+    
+    # Validate that name is not empty or just whitespace
+    if not amenity_data['name'].strip():
+        raise ValueError("Amenity name cannot be empty")
+    
+    # Check if amenity with the same name already exists
+    existing_amenities = self.amenity_repo.get_all()
+    for amenity in existing_amenities:
+        if amenity.name.lower() == amenity_data['name'].strip().lower():
+            raise ValueError("Amenity with this name already exists")
+    
+    # Create the new amenity
+    new_amenity = Amenity(name=amenity_data['name'].strip())
+    
+    # Save to repository
+    self.amenity_repo.add(new_amenity)
+    
+    return new_amenity
+
+
+def get_amenity(self, amenity_id):
+    """
+    Retrieve an amenity by ID
+    
+    Args:
+        amenity_id (str): The UUID of the amenity
+        
+    Returns:
+        Amenity: The amenity object if found, None otherwise
+        
+    Raises:
+        ValueError: If the amenity is not found
+    """
+    # Retrieve the amenity from the repository
+    amenity = self.amenity_repo.get(amenity_id)
+    
+    if not amenity:
+        raise ValueError(f"Amenity with ID {amenity_id} not found")
+    
+    return amenity
+
+
+def get_all_amenities(self):
+    """
+    Retrieve all amenities
+    
+    Returns:
+        list: List of all amenity objects
+    """
+    # Get all amenities from the repository
+    return self.amenity_repo.get_all()
+
+
+def update_amenity(self, amenity_id, amenity_data):
+    """
+    Update an existing amenity
+    
+    Args:
+        amenity_id (str): The UUID of the amenity to update
+        amenity_data (dict): Dictionary containing updated amenity information
+        
+    Returns:
+        Amenity: The updated amenity object
+        
+    Raises:
+        ValueError: If the amenity is not found or data is invalid
+    """
+    # Validate that name is provided
+    if 'name' not in amenity_data or not amenity_data['name']:
+        raise ValueError("Amenity name is required")
+    
+    # Validate that name is not empty or just whitespace
+    if not amenity_data['name'].strip():
+        raise ValueError("Amenity name cannot be empty")
+    
+    # Retrieve the existing amenity
+    amenity = self.amenity_repo.get(amenity_id)
+    
+    if not amenity:
+        raise ValueError(f"Amenity with ID {amenity_id} not found")
+    
+    # Check if another amenity with the same name already exists (excluding current amenity)
+    existing_amenities = self.amenity_repo.get_all()
+    for existing_amenity in existing_amenities:
+        if (existing_amenity.id != amenity_id and 
+            existing_amenity.name.lower() == amenity_data['name'].strip().lower()):
+            raise ValueError("Amenity with this name already exists")
+    
+    # Update the amenity's name
+    amenity.name = amenity_data['name'].strip()
+    
+    # Save the updated amenity to the repository
+    self.amenity_repo.update(amenity_id, amenity_data)
+    
+    return amenity
