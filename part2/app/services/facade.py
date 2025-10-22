@@ -140,24 +140,6 @@ class HBnBFacade:
         pass
 
     # ==================== AMENITY METHODS (Placeholders) ====================
-    
-    def create_amenity(self, amenity_data):
-        amenity = Amenity(**amenity_data)
-        self.amenity_repo.add(amenity)
-        return amenity
-
-    def get_amenity(self, amenity_id):
-        return self.amenity_repo.get(amenity_id)
-
-    def get_all_amenities(self):
-        return self.amenity_repo.get_all()
-
-    def update_amenity(self, amenity_id, amenity_data):
-        amenity = self.amenity_repo.get(amenity_id)
-        if amenity:
-            self.amenity_repo.update(amenity_id, amenity_data)
-            return amenity
-        return None
 def create_amenity(self, amenity_data):
     """
     Create a new amenity
@@ -171,7 +153,6 @@ def create_amenity(self, amenity_data):
     Raises:
         ValueError: If the amenity data is invalid or amenity name already exists
     """
-    from app.models.amenity import Amenity
     
     # Validate that name is provided
     if 'name' not in amenity_data or not amenity_data['name']:
