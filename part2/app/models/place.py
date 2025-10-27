@@ -43,7 +43,7 @@ class Place(BaseModel):
         
         # Validate and set attributes
         self.title = self._validate_title(title)
-        self.description = description  # Optional, no validation needed
+        self.description = description if description else ""
         self.price = self._validate_price(price)
         self.latitude = self._validate_latitude(latitude)
         self.longitude = self._validate_longitude(longitude)
@@ -54,15 +54,44 @@ class Place(BaseModel):
         self.amenities = []
     
     def _validate_title(self, title):
-        """Validate place title"""
+        """
+        Validate place title
+        
+        Args:
+            title (str): Title to validate
+            
+        Returns:
+            str: Validated and cleaned title
+            
+        Raises:
+            ValueError: If title is invalid
+        """
         if not title or not isinstance(title, str):
             raise ValueError("Title is required and must be a string")
-        if len(title) > 100:
+        
+        # Check if title is not just whitespace
+        if not title.strip():
+            raise ValueError("Title cannot be empty or just whitespace")
+        
+        # Check length
+        if len(title.strip()) > 100:
             raise ValueError("Title must not exceed 100 characters")
-        return title
+        
+        return title.strip()
     
     def _validate_price(self, price):
-        """Validate price"""
+        """
+        Validate price
+        
+        Args:
+            price: Price to validate
+            
+        Returns:
+            float: Validated price
+            
+        Raises:
+            ValueError: If price is invalid
+        """
         if not isinstance(price, (int, float)):
             raise ValueError("Price must be a number")
         if price <= 0:
@@ -70,7 +99,18 @@ class Place(BaseModel):
         return float(price)
     
     def _validate_latitude(self, latitude):
-        """Validate latitude coordinate"""
+        """
+        Validate latitude coordinate
+        
+        Args:
+            latitude: Latitude to validate
+            
+        Returns:
+            float: Validated latitude
+            
+        Raises:
+            ValueError: If latitude is invalid
+        """
         if not isinstance(latitude, (int, float)):
             raise ValueError("Latitude must be a number")
         if latitude < -90.0 or latitude > 90.0:
@@ -78,7 +118,18 @@ class Place(BaseModel):
         return float(latitude)
     
     def _validate_longitude(self, longitude):
-        """Validate longitude coordinate"""
+        """
+        Validate longitude coordinate
+        
+        Args:
+            longitude: Longitude to validate
+            
+        Returns:
+            float: Validated longitude
+            
+        Raises:
+            ValueError: If longitude is invalid
+        """
         if not isinstance(longitude, (int, float)):
             raise ValueError("Longitude must be a number")
         if longitude < -180.0 or longitude > 180.0:
@@ -86,7 +137,21 @@ class Place(BaseModel):
         return float(longitude)
     
     def _validate_owner(self, owner):
-        """Validate owner is a User instance"""
+        """
+        Validate owner is a User instance
+        
+        Args:
+            owner: Owner to validate
+            
+        Returns:
+            User: Validated owner
+            
+        Raises:
+            ValueError: If owner is invalid
+        """
+        if not owner:
+            raise ValueError("Owner is required")
+        
         from app.models.user import User
         if not isinstance(owner, User):
             raise ValueError("Owner must be a valid User instance")
@@ -98,11 +163,15 @@ class Place(BaseModel):
         
         Args:
             review (Review): Review object to add
+            
+        Raises:
+            ValueError: If review is invalid
         """
         from app.models.review import Review
         if not isinstance(review, Review):
             raise ValueError("Must be a valid Review instance")
-        self.reviews.append(review)
+        if review not in self.reviews:
+            self.reviews.append(review)
     
     def add_amenity(self, amenity):
         """
@@ -110,9 +179,47 @@ class Place(BaseModel):
         
         Args:
             amenity (Amenity): Amenity object to add
+            
+        Raises:
+            ValueError: If amenity is invalid
         """
         from app.models.amenity import Amenity
         if not isinstance(amenity, Amenity):
             raise ValueError("Must be a valid Amenity instance")
         if amenity not in self.amenities:
             self.amenities.append(amenity)
+    
+    def to_dict(self):
+        """
+        Convert place to dictionary representation
+        
+        Returns:
+            dict: Place data as dictionary
+        """
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'price': self.price,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'owner_id': self.owner.id,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'amenities': [
+                {
+                    'id': amenity.id,
+                    'name': amenity.name
+                }
+                for amenity in self.amenities
+            ],
+            'reviews': [
+                {
+                    'id': review.id,
+                    'text': review.text,
+                    'rating': review.rating,
+                    'user_id': review.user.id
+                }
+                for review in self.reviews
+            ]
+        }

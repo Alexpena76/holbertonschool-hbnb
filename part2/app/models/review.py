@@ -12,7 +12,7 @@ class Review(BaseModel):
     
     Attributes:
         id (str): Unique identifier (UUID)
-        text (str): Review content (required)
+        text (str): Review content (required, max 1000 chars)
         rating (int): Rating from 1 to 5 (required)
         place (Place): Place being reviewed
         user (User): User who wrote the review
@@ -42,13 +42,44 @@ class Review(BaseModel):
         self.user = self._validate_user(user)
     
     def _validate_text(self, text):
-        """Validate review text"""
+        """
+        Validate review text
+        
+        Args:
+            text (str): Review text to validate
+            
+        Returns:
+            str: Validated and cleaned text
+            
+        Raises:
+            ValueError: If text is invalid
+        """
         if not text or not isinstance(text, str):
             raise ValueError("Review text is required and must be a string")
-        return text
+        
+        # Check if text is not just whitespace
+        if not text.strip():
+            raise ValueError("Review text cannot be empty or just whitespace")
+        
+        # Check length
+        if len(text.strip()) > 1000:
+            raise ValueError("Review text must not exceed 1000 characters")
+        
+        return text.strip()
     
     def _validate_rating(self, rating):
-        """Validate rating value"""
+        """
+        Validate rating value
+        
+        Args:
+            rating (int): Rating to validate
+            
+        Returns:
+            int: Validated rating
+            
+        Raises:
+            ValueError: If rating is invalid
+        """
         if not isinstance(rating, int):
             raise ValueError("Rating must be an integer")
         if rating < 1 or rating > 5:
@@ -56,15 +87,60 @@ class Review(BaseModel):
         return rating
     
     def _validate_place(self, place):
-        """Validate place is a Place instance"""
+        """
+        Validate place is a Place instance
+        
+        Args:
+            place: Place object to validate
+            
+        Returns:
+            Place: Validated place
+            
+        Raises:
+            ValueError: If place is invalid
+        """
+        if not place:
+            raise ValueError("Place is required")
+        
         from app.models.place import Place
         if not isinstance(place, Place):
             raise ValueError("Place must be a valid Place instance")
         return place
     
     def _validate_user(self, user):
-        """Validate user is a User instance"""
+        """
+        Validate user is a User instance
+        
+        Args:
+            user: User object to validate
+            
+        Returns:
+            User: Validated user
+            
+        Raises:
+            ValueError: If user is invalid
+        """
+        if not user:
+            raise ValueError("User is required")
+        
         from app.models.user import User
         if not isinstance(user, User):
             raise ValueError("User must be a valid User instance")
         return user
+    
+    def to_dict(self):
+        """
+        Convert review to dictionary representation
+        
+        Returns:
+            dict: Review data as dictionary
+        """
+        return {
+            'id': self.id,
+            'text': self.text,
+            'rating': self.rating,
+            'place_id': self.place.id,
+            'user_id': self.user.id,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
