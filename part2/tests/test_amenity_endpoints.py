@@ -86,7 +86,7 @@ class TestAmenityEndpoints(unittest.TestCase):
     def test_get_amenity_not_found(self):
         """Test retrieving a non-existent amenity"""
         response = self.client.get('/api/v1/amenities/nonexistent-id-12345')
-        self.assertEqual(response.status_code, 400)  # Your API returns 400 for not found
+        self.assertEqual(response.status_code, 404)
         print("✓ Non-existent amenity returns error")
 
     def test_get_all_amenities(self):

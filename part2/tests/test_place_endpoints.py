@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app import create_app
 import json
+import uuid
 
 
 class TestPlaceEndpoints(unittest.TestCase):
@@ -24,14 +25,13 @@ class TestPlaceEndpoints(unittest.TestCase):
         self.app.testing = True
         
         # Create a user for testing
+        unique_id = str(uuid.uuid4())[:8]  # Generate unique ID
         user_response = self.client.post('/api/v1/users',
             json={
                 "first_name": "PlaceOwner",
                 "last_name": "Test",
-                "email": "place.owner.test@example.com"
-            },
-            content_type='application/json')
-        
+                "email": f"place.owner.{unique_id}@example.com"  # ← Unique email
+            })
         if user_response.status_code == 201:
             self.user_id = json.loads(user_response.data)['id']
         else:

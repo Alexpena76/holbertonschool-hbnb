@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app import create_app
 import json
+import uuid
 
 
 class TestReviewEndpoints(unittest.TestCase):
@@ -24,11 +25,12 @@ class TestReviewEndpoints(unittest.TestCase):
         self.app.testing = True
         
         # Create a user
+        unique_id = str(uuid.uuid4())[:8]
         user_response = self.client.post('/api/v1/users',
             json={
                 "first_name": "ReviewTest",
                 "last_name": "User",
-                "email": "review.test.user@example.com"
+                "email": f"review.test.{unique_id}@example.com"  # ← Make unique
             },
             content_type='application/json')
         
