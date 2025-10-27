@@ -18,6 +18,7 @@ def create_app():
         Flask: Configured Flask application instance with registered namespaces
     """
     app = Flask(__name__)
+    app.url_map.strict_slashes = False
     api = Api(
         app,
         version='1.0',
