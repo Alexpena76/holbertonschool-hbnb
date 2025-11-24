@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review - HBnB</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HBnB Logo" class="logo">
+            <h1 class="app-title">hbnb</h1>
+        </div>
+        <a href="{{ url_for('index') }}" class="login-button">Home</a>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Reviewing: Beautiful Beach House</h1>
+
+        <!-- Add Review Form -->
+        <div class="add-review">
+            <h2>Add a Review</h2>
+            <form class="form" action="{{ url_for('add_review', place_id='1') }}" method="POST">
+                <label for="review-text">Your Review:</label>
+                <textarea id="review-text" name="review-text" required placeholder="Share your experience..."></textarea>
+
+                <label for="rating">Rating:</label>
+                <select id="rating" name="rating" required>
+                    <option value="">Select rating</option>
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                </select>
+
+                <button type="submit">Submit Review</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 HBnB Evolution. All rights reserved.</p>
+    </footer>
+</body>
+</html>

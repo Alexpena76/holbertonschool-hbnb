@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBnB - Available Places</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HBnB Logo" class="logo">
+            <h1 class="app-title">hbnb</h1>
+        </div>
+        <a href="{{ url_for('login') }}" class="login-button">Login</a>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Available Places</h1>
+
+        <!-- Price Filter -->
+        <div class="filter-section">
+            <label for="price-filter">Max Price:</label>
+            <select id="price-filter" name="price-filter">
+                <option value="all">All</option>
+                <option value="50">$50</option>
+                <option value="100">$100</option>
+                <option value="150">$150</option>
+                <option value="200">$200</option>
+            </select>
+        </div>
+
+        <!-- Places Grid -->
+        <div class="places-grid">
+            <!-- Place Card 1 -->
+            <div class="place-card" data-price="150">
+                <h3>Beautiful Beach House</h3>
+                <p class="price">Price per night: $150</p>
+                <a href="{{ url_for('place_details', place_id='1') }}" class="details-button">View Details</a>
+            </div>
+
+            <!-- Place Card 2 -->
+            <div class="place-card" data-price="100">
+                <h3>Cozy Cabin</h3>
+                <p class="price">Price per night: $100</p>
+                <a href="{{ url_for('place_details', place_id='2') }}" class="details-button">View Details</a>
+            </div>
+
+            <!-- Place Card 3 -->
+            <div class="place-card" data-price="200">
+                <h3>Modern Apartment</h3>
+                <p class="price">Price per night: $200</p>
+                <a href="{{ url_for('place_details', place_id='3') }}" class="details-button">View Details</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 HBnB Evolution. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

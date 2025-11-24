@@ -1,0 +1,505 @@
+/* ============================================
+   HBnB Application Styles
+   ============================================ */
+
+/* CSS Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Color Palette */
+    --primary-color: #FF5A5F;
+    --secondary-color: #00A699;
+    --accent-color: #FC642D;
+    --text-dark: #484848;
+    --text-light: #767676;
+    --border-color: #DDDDDD;
+    --background-light: #F7F7F7;
+    --white: #FFFFFF;
+    
+    /* Spacing */
+    --card-margin: 20px;
+    --card-padding: 10px;
+    --card-border-radius: 10px;
+    
+    /* Fonts */
+    --font-primary: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-primary);
+    color: var(--text-dark);
+    background-color: var(--background-light);
+    line-height: 1.6;
+}
+
+/* ============================================
+   Header Styles
+   ============================================ */
+header {
+    background-color: var(--accent-color);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.app-title {
+    color: var(--white);
+    font-size: 24px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.login-button {
+    background-color: var(--white);
+    color: var(--accent-color);
+    padding: 10px 25px;
+    border: none;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background-color: var(--text-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   Main Content Area
+   ============================================ */
+main {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+h1, h2 {
+    color: var(--text-dark);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   Filter Section
+   ============================================ */
+.filter-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.filter-section label {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.filter-section select {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: var(--white);
+    transition: border-color 0.3s ease;
+}
+
+.filter-section select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* ============================================
+   Place Cards Grid
+   ============================================ */
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--card-margin);
+    margin-bottom: 40px;
+}
+
+.place-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    margin: var(--card-margin);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.place-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.place-card h3 {
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    margin: 15px 0;
+}
+
+.place-card .price {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    margin: 10px 0;
+}
+
+.details-button {
+    background-color: var(--accent-color);
+    color: var(--white);
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.details-button:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+/* ============================================
+   Place Details Page
+   ============================================ */
+.place-details {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 30px;
+    margin: var(--card-margin) 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.place-info {
+    margin: 20px 0;
+}
+
+.place-info p {
+    margin: 15px 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.place-info strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+/* ============================================
+   Reviews Section
+   ============================================ */
+.reviews-section {
+    margin-top: 40px;
+}
+
+.reviews-section h2 {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.review-card {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    margin: var(--card-margin) 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-card h4 {
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.review-card p {
+    color: var(--text-light);
+    margin: 10px 0;
+}
+
+.review-card .rating {
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.rating-stars {
+    color: #FFD700;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+/* ============================================
+   Add Review Form
+   ============================================ */
+.add-review {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 30px;
+    margin: var(--card-margin) 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.add-review h2 {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.form input,
+.form textarea,
+.form select {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form input:focus,
+.form textarea:focus,
+.form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form button {
+    background-color: var(--accent-color);
+    color: var(--white);
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form button:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   Login Form
+   ============================================ */
+.login-container {
+    max-width: 400px;
+    margin: 80px auto;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 40px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h1 {
+    margin-bottom: 30px;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+footer {
+    background-color: var(--accent-color);
+    color: var(--white);
+    text-align: center;
+    padding: 20px;
+    margin-top: 60px;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 768px) {
+    .places-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .app-title {
+        font-size: 20px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+    display: none;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+/* Error and Success Messages */
+.error-message,
+.success-message {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+}
+
+.error-message {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.success-message {
+    background-color: #efe;
+    color: #2a7;
+    border: 1px solid #cfc;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Login Form Improvements */
+.login-container {
+    max-width: 400px;
+    margin: 80px auto;
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-container input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.login-container input:focus {
+    outline: none;
+    border-color: #FC642D;
+}
+
+.login-container button {
+    background-color: #FC642D;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.login-container button:hover:not(:disabled) {
+    background-color: #FF5A5F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-container button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
