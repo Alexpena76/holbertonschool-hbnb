@@ -2,30 +2,28 @@
 Application Factory for the HBnB application.
 """
 
-from flask import Flask
+import os
+from flask import Flask, render_template
 from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from flask_sqlalchemy import SQLAlchemy  # SQLALCHEMY ADDITION: Import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 
 # Initialize extensions
 bcrypt = Bcrypt()
 jwt = JWTManager()
-db = SQLAlchemy()  # SQLALCHEMY ADDITION: Initialize SQLAlchemy instance
+db = SQLAlchemy()
 
 
 def create_app(config_class="config.DevelopmentConfig"):
     """
     Create and configure the Flask application using the Application Factory pattern.
-    
-    Args:
-        config_class (str or object): The configuration class to use.
-                                      Defaults to "config.DevelopmentConfig"
-    
-    Returns:
-        Flask: Configured Flask application instance
     """
-    app = Flask(__name__)
+    # Get the correct paths for templates and static files
+    template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+    static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
+    
+    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
     
     # Load configuration
     app.config.from_object(config_class)
@@ -33,10 +31,38 @@ def create_app(config_class="config.DevelopmentConfig"):
     # Initialize extensions with app
     bcrypt.init_app(app)
     jwt.init_app(app)
-    db.init_app(app)  # SQLALCHEMY ADDITION: Initialize SQLAlchemy with app
+    db.init_app(app)
     
     # Disable strict trailing slashes
     app.url_map.strict_slashes = False
+    
+    # =========================================================================
+    # FRONTEND ROUTES - Serve HTML templates
+    # =========================================================================
+    
+    @app.route('/')
+    def index():
+        """Serve the home page with places listing"""
+        return render_template('index.html')
+    
+    @app.route('/login')
+    def login():
+        """Serve the login page"""
+        return render_template('login.html')
+    
+    @app.route('/place/<place_id>')
+    def place_details(place_id):
+        """Serve the place details page"""
+        return render_template('place.html')
+    
+    @app.route('/add_review/<place_id>')
+    def add_review(place_id):
+        """Serve the add review page"""
+        return render_template('add_review.html')
+    
+    # =========================================================================
+    # API ROUTES
+    # =========================================================================
     
     # Initialize Flask-RESTX API
     api = Api(
@@ -44,7 +70,7 @@ def create_app(config_class="config.DevelopmentConfig"):
         version='1.0',
         title='HBnB API',
         description='HBnB Application API',
-        doc='/api/v1/'
+        doc='/api/docs/'
     )
     
     # Import and register namespaces
