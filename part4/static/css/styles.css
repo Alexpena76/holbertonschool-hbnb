@@ -22,7 +22,7 @@
     
     /* Spacing */
     --card-margin: 20px;
-    --card-padding: 10px;
+    --card-padding: 20px;
     --card-border-radius: 10px;
     
     /* Fonts */
@@ -34,6 +34,13 @@ body {
     color: var(--text-dark);
     background-color: var(--background-light);
     line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
 }
 
 /* ============================================
@@ -56,14 +63,13 @@ header {
 .header-content {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
 }
 
 .app-title {
     color: var(--white);
     font-size: 24px;
     font-weight: 600;
-    margin-left: 10px;
 }
 
 .login-button {
@@ -101,12 +107,12 @@ h1, h2 {
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
 }
 
@@ -123,13 +129,13 @@ h2 {
 
 .filter-section label {
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .filter-section select {
-    padding: 10px 20px;
+    padding: 8px 15px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 5px;
     font-size: 1rem;
     cursor: pointer;
     background-color: var(--white);
@@ -146,8 +152,8 @@ h2 {
    ============================================ */
 .places-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--card-margin);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
     margin-bottom: 40px;
 }
 
@@ -155,9 +161,8 @@ h2 {
     background-color: var(--white);
     border: 1px solid var(--border-color);
     border-radius: var(--card-border-radius);
-    padding: var(--card-padding);
-    margin: var(--card-margin);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
     text-align: center;
 }
@@ -169,14 +174,19 @@ h2 {
 
 .place-card h3 {
     color: var(--text-dark);
-    font-size: 1.5rem;
-    margin: 15px 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 15px;
 }
 
 .place-card .price {
-    color: var(--text-light);
-    font-size: 1.1rem;
-    margin: 10px 0;
+    color: var(--text-dark);
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.place-card .description {
+    display: none; /* Hide description on index page */
 }
 
 .details-button {
@@ -187,7 +197,6 @@ h2 {
     border-radius: 8px;
     text-decoration: none;
     display: inline-block;
-    margin-top: 15px;
     font-weight: 600;
     transition: all 0.3s ease;
     cursor: pointer;
@@ -207,16 +216,16 @@ h2 {
     border-radius: var(--card-border-radius);
     padding: 30px;
     margin: var(--card-margin) 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .place-info {
-    margin: 20px 0;
+    text-align: center;
 }
 
 .place-info p {
-    margin: 15px 0;
-    font-size: 1.1rem;
+    margin: 10px 0;
+    font-size: 1rem;
     line-height: 1.8;
 }
 
@@ -235,6 +244,7 @@ h2 {
 .reviews-section h2 {
     text-align: left;
     margin-bottom: 20px;
+    font-size: 1.3rem;
 }
 
 .review-card {
@@ -242,83 +252,95 @@ h2 {
     border: 1px solid var(--border-color);
     border-radius: var(--card-border-radius);
     padding: 20px;
-    margin: var(--card-margin) 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 15px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .review-card h4 {
     color: var(--text-dark);
-    font-size: 1.2rem;
+    font-size: 1rem;
+    font-weight: 700;
     margin-bottom: 10px;
 }
 
 .review-card p {
-    color: var(--text-light);
-    margin: 10px 0;
+    color: var(--text-dark);
+    margin: 8px 0;
+    font-size: 0.95rem;
 }
 
 .review-card .rating {
-    color: var(--accent-color);
-    font-weight: 600;
-    font-size: 1.1rem;
+    color: var(--text-dark);
+    font-size: 0.95rem;
 }
 
 .rating-stars {
-    color: #FFD700;
-    font-size: 1.2rem;
+    color: var(--text-dark);
+    font-size: 1rem;
     letter-spacing: 2px;
+}
+
+.no-reviews {
+    color: var(--text-light);
+    font-style: italic;
+    padding: 20px 0;
 }
 
 /* ============================================
    Add Review Form
    ============================================ */
 .add-review {
-    background-color: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-border-radius);
-    padding: 30px;
-    margin: var(--card-margin) 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 40px;
 }
 
 .add-review h2 {
     text-align: left;
     margin-bottom: 20px;
+    font-size: 1.3rem;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .form label {
     font-weight: 600;
     color: var(--text-dark);
-    margin-bottom: 5px;
+    font-size: 0.95rem;
 }
 
-.form input,
-.form textarea,
+.form textarea {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    min-height: 100px;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.form textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
 .form select {
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
+    background-color: var(--white);
+    cursor: pointer;
     transition: border-color 0.3s ease;
 }
 
-.form input:focus,
-.form textarea:focus,
 .form select:focus {
     outline: none;
-    border-color: var(--primary-color);
-}
-
-.form textarea {
-    min-height: 120px;
-    resize: vertical;
+    border-color: var(--accent-color);
 }
 
 .form button {
@@ -327,7 +349,7 @@ h2 {
     padding: 15px;
     border: none;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -335,8 +357,11 @@ h2 {
 
 .form button:hover {
     background-color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 /* ============================================
@@ -356,6 +381,48 @@ h2 {
     margin-bottom: 30px;
 }
 
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-container input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.login-container input:focus {
+    outline: none;
+    border-color: #FC642D;
+}
+
+.login-container button {
+    background-color: #FC642D;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.login-container button:hover:not(:disabled) {
+    background-color: #FF5A5F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-container button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 /* ============================================
    Footer
    ============================================ */
@@ -364,7 +431,7 @@ footer {
     color: var(--white);
     text-align: center;
     padding: 20px;
-    margin-top: 60px;
+    margin-top: auto;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -392,11 +459,11 @@ footer p {
     }
     
     h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
     
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
 }
 
@@ -450,56 +517,4 @@ footer p {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* Login Form Improvements */
-.login-container {
-    max-width: 400px;
-    margin: 80px auto;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.login-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.login-container input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-}
-
-.login-container input:focus {
-    outline: none;
-    border-color: #FC642D;
-}
-
-.login-container button {
-    background-color: #FC642D;
-    color: white;
-    padding: 15px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.login-container button:hover:not(:disabled) {
-    background-color: #FF5A5F;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.login-container button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
 }
