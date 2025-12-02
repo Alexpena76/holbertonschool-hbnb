@@ -1,6 +1,7 @@
 """
 Bcrypt Password Hash Generator
 Generates bcrypt hashes for passwords
+This is a helper file which is not imported anywhere else
 """
 
 import bcrypt
