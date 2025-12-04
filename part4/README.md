@@ -1,16 +1,54 @@
-# HBnB Application - Part 4
+# HBnB Evolution - Part 4
 
-## Overview
+A full-stack vacation rental platform API built with Flask, similar to Airbnb. Features JWT authentication, SQLAlchemy ORM, role-based access control, and a complete RESTful API.
 
-HBnB is a full-stack Flask-based REST API application that implements a vacation rental platform similar to Airbnb. The application follows a layered architecture with clear separation between Presentation, Business Logic, Service, and Persistence layers. It uses the **Repository Pattern**, **Facade Pattern**, and **SQLAlchemy ORM** for database persistence.
+---
 
-### Key Features
-- **RESTful API** with Flask-RESTX and Swagger documentation
-- **JWT Authentication** for secure user sessions
-- **Bcrypt Password Hashing** for security
-- **SQLAlchemy ORM** with SQLite database
-- **Repository Pattern** for data access abstraction
-- **Facade Pattern** for business logic coordination
+## Table of Contents
+
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Architecture](#architecture)
+- [Database Schema](#database-schema)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [API Endpoints](#api-endpoints)
+- [Authentication](#authentication)
+- [Authorization & Permissions](#authorization--permissions)
+- [Test Data](#test-data)
+- [Testing](#testing)
+- [Frontend](#frontend)
+- [Design Patterns](#design-patterns)
+- [Security Features](#security-features)
+- [Author](#author)
+
+---
+
+## Features
+
+- **User Management**: Registration, authentication, profile updates
+- **Place Listings**: Create, read, update, delete rental properties
+- **Reviews System**: Users can review places (with validation rules)
+- **Amenities**: Admin-managed amenities linked to places
+- **JWT Authentication**: Secure token-based authentication
+- **Role-Based Access Control**: Admin vs regular user permissions
+- **Password Security**: Bcrypt hashing with salt
+- **SQL Injection Prevention**: SQLAlchemy ORM with parameterized queries
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Flask 3.0.0 |
+| **API** | Flask-RESTX 1.3.0 (with Swagger docs) |
+| **Database** | SQLite with Flask-SQLAlchemy 3.1.1 |
+| **Authentication** | Flask-JWT-Extended 4.6.0 |
+| **Password Hashing** | Flask-Bcrypt 1.0.1 |
+| **CORS** | Flask-CORS 4.0.0 |
+| **Validation** | jsonschema 4.17.3 |
 
 ---
 
@@ -19,49 +57,52 @@ HBnB is a full-stack Flask-based REST API application that implements a vacation
 ```
 part4/
 ├── run.py                              # Application entry point
-├── config.py                           # Configuration (Dev/Test/Prod)
+├── config.py                           # Environment configurations
+├── create_admin.py                     # Script to create admin user
+├── generate_bcrypt_hash.py             # Utility for password hashing
 ├── requirements.txt                    # Python dependencies
-├── schema.sql                          # Database schema
-├── populate_test_data.sql              # Sample data for testing
+├── schema.sql                          # Database schema definition
+├── populate_test_data.sql              # Sample data (5 users, 5 places, 8 amenities, 9 reviews)
 ├── app/
-│   ├── __init__.py                     # Flask app factory
+│   ├── __init__.py                     # Flask app factory + extensions
 │   ├── api/
+│   │   ├── __init__.py
 │   │   └── v1/
 │   │       ├── __init__.py
-│   │       ├── auth.py                 # Authentication endpoints
-│   │       ├── users.py                # User CRUD endpoints
-│   │       ├── places.py               # Place CRUD endpoints
-│   │       ├── reviews.py              # Review CRUD endpoints
-│   │       └── amenities.py            # Amenity CRUD endpoints
+│   │       ├── auth.py                 # Login, protected routes
+│   │       ├── users.py                # User CRUD (admin-restricted creation)
+│   │       ├── places.py               # Place CRUD (owner/admin permissions)
+│   │       ├── reviews.py              # Review CRUD (author/admin permissions)
+│   │       └── amenities.py            # Amenity CRUD (admin only)
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── base_model.py               # Base model with id, timestamps
-│   │   ├── user.py                     # User model
-│   │   ├── place.py                    # Place model
-│   │   ├── review.py                   # Review model
+│   │   ├── __init__.py                 # Association table (place_amenity)
+│   │   ├── base_model.py               # Abstract base with id, timestamps
+│   │   ├── user.py                     # User model + password hashing
+│   │   ├── place.py                    # Place model + relationships
+│   │   ├── review.py                   # Review model + validation
 │   │   └── amenity.py                  # Amenity model
 │   ├── services/
-│   │   ├── __init__.py                 # Facade singleton
+│   │   ├── __init__.py                 # Facade singleton instance
 │   │   ├── facade.py                   # Business logic coordinator
 │   │   └── repositories/
 │   │       ├── __init__.py
-│   │       ├── user_repository.py      # User-specific queries
-│   │       ├── place_repository.py     # Place-specific queries
-│   │       ├── review_repository.py    # Review-specific queries
-│   │       └── amenity_repository.py   # Amenity-specific queries
+│   │       ├── user_repository.py      # get_user_by_email()
+│   │       ├── place_repository.py     # get_by_owner()
+│   │       ├── review_repository.py    # get_by_place(), get_by_user()
+│   │       └── amenity_repository.py   # get_by_name()
 │   └── persistence/
 │       ├── __init__.py
-│       └── repository.py               # Base repository classes
-├── templates/                          # Jinja2 HTML templates
-│   ├── index.html                      # Homepage with place listings
-│   ├── login.html                      # Login page
-│   ├── place.html                      # Place details page
-│   └── add_review.html                 # Add review page
+│       └── repository.py               # Repository, InMemoryRepository, SQLAlchemyRepository
+├── templates/
+│   ├── index.html                      # Homepage with place cards
+│   ├── login.html                      # Login form
+│   ├── place.html                      # Place details + reviews
+│   └── add_review.html                 # Review submission form
 ├── static/
 │   ├── css/
-│   │   └── styles.css                  # Application styles
+│   │   └── styles.css                  # Complete styling (responsive)
 │   └── js/
-│       └── script.js                   # Frontend JavaScript (login)
+│       └── script.js                   # Login functionality + JWT cookie handling
 └── tests/
     ├── __init__.py
     ├── test_user_endpoints.py
@@ -70,7 +111,7 @@ part4/
     ├── test_amenity_endpoints.py
     ├── test_authenticated_endpoints.py
     ├── test_admin_endpoints.py
-    ├── test_jwt.py
+    ├── test_jwt.py                     # JWT flow testing
     └── test_passwords.py
 ```
 
@@ -78,202 +119,161 @@ part4/
 
 ## Architecture
 
-### Layer Organization
+### Layered Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              Presentation Layer (API)                    │
-│                    Flask-RESTX                           │
-│         auth.py, users.py, places.py, reviews.py         │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│                 Service Layer (Facade)                   │
-│              Business Logic Coordination                 │
-│                     facade.py                            │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│              Business Logic Layer (Models)               │
-│              Validation & Domain Rules                   │
-│         user.py, place.py, review.py, amenity.py         │
-└────────────────────────┬────────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│             Persistence Layer (Repositories)             │
-│               SQLAlchemy ORM + SQLite                    │
-│    repository.py + user_repository.py, etc.              │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   PRESENTATION LAYER                         │
+│                      (API Endpoints)                         │
+│         auth.py | users.py | places.py | reviews.py          │
+│                      Flask-RESTX                             │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
+│                    SERVICE LAYER                             │
+│                      (Facade)                                │
+│                     facade.py                                │
+│            Business logic coordination                       │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
+│                 BUSINESS LOGIC LAYER                         │
+│                      (Models)                                │
+│         user.py | place.py | review.py | amenity.py          │
+│              Validation & domain rules                       │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
+│                  PERSISTENCE LAYER                           │
+│                   (Repositories)                             │
+│   SQLAlchemyRepository → UserRepo, PlaceRepo, ReviewRepo     │
+│                  SQLite Database                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Data Flow
+### Request Flow
 
 ```
-HTTP Request → API Endpoint → Facade → Repository → SQLite Database
-                    ↓
-              JWT Validation (if protected route)
-                    ↓
-              Model Validation
-                    ↓
-              Database Operation
-                    ↓
-HTTP Response ← JSON Response ← to_dict() ← Model Object
+HTTP Request
+     │
+     ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  API Route  │ ──► │   Facade    │ ──► │ Repository  │ ──► │  Database   │
+│ (places.py) │     │ (facade.py) │     │ (SQLAlchemy)│     │  (SQLite)   │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+     │                                                              │
+     │◄─────────────────── JSON Response ◄──────────────────────────┘
+     │
+     ▼
+HTTP Response
 ```
 
 ---
 
 ## Database Schema
 
-### Entity Relationships
+### Entity Relationship Diagram
 
 ```
-┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│    User      │       │    Place     │       │   Amenity    │
-├──────────────┤       ├──────────────┤       ├──────────────┤
-│ id (PK)      │──┐    │ id (PK)      │    ┌──│ id (PK)      │
-│ first_name   │  │    │ title        │    │  │ name         │
-│ last_name    │  │    │ description  │    │  └──────────────┘
-│ email        │  │    │ price        │    │
-│ password     │  └───►│ owner_id(FK) │    │  ┌──────────────┐
-│ is_admin     │       │ latitude     │◄───┼──│place_amenity │
-└──────────────┘       │ longitude    │    │  ├──────────────┤
-       │               └──────────────┘    │  │place_id (FK) │
-       │                      │            └──│amenity_id(FK)│
-       │                      │               └──────────────┘
-       │               ┌──────▼───────┐
-       │               │    Review    │
-       │               ├──────────────┤
-       └──────────────►│ id (PK)      │
-                       │ text         │
-                       │ rating       │
-                       │ user_id (FK) │
-                       │ place_id(FK) │
-                       └──────────────┘
+┌─────────────────┐
+│      users      │
+├─────────────────┤
+│ id (PK)         │──────────────────────────────┐
+│ first_name      │                              │
+│ last_name       │                              │
+│ email (unique)  │                              │
+│ password        │                              │
+│ is_admin        │                              │
+│ created_at      │                              │
+│ updated_at      │                              │
+└─────────────────┘                              │
+        │                                        │
+        │ 1:N                                    │ 1:N
+        ▼                                        │
+┌─────────────────┐                              │
+│     places      │                              │
+├─────────────────┤                              │
+│ id (PK)         │──────────────┐               │
+│ title           │              │               │
+│ description     │              │               │
+│ price           │              │               │
+│ latitude        │              │               │
+│ longitude       │              │               │
+│ owner_id (FK)───┼──► users.id  │               │
+│ created_at      │              │               │
+│ updated_at      │              │               │
+└─────────────────┘              │               │
+        │                        │               │
+        │ N:N                    │ 1:N           │
+        ▼                        │               │
+┌─────────────────┐              │               │
+│  place_amenity  │              │               │
+├─────────────────┤              │               │
+│ place_id (FK)───┼──► places.id │               │
+│ amenity_id (FK)─┼──► amenities.id              │
+└─────────────────┘              │               │
+        │                        │               │
+        │                        ▼               │
+        │              ┌─────────────────┐       │
+        │              │    reviews      │       │
+        │              ├─────────────────┤       │
+        │              │ id (PK)         │       │
+        │              │ text            │       │
+        │              │ rating (1-5)    │       │
+        │              │ user_id (FK)────┼───────┘
+        │              │ place_id (FK)───┼──► places.id
+        │              │ created_at      │
+        │              │ updated_at      │
+        │              └─────────────────┘
+        │
+        ▼
+┌─────────────────┐
+│   amenities     │
+├─────────────────┤
+│ id (PK)         │
+│ name (unique)   │
+│ created_at      │
+│ updated_at      │
+└─────────────────┘
 ```
 
-### Relationships
-- **User → Place**: One-to-Many (user owns many places)
-- **User → Review**: One-to-Many (user writes many reviews)
-- **Place → Review**: One-to-Many (place has many reviews)
-- **Place ↔ Amenity**: Many-to-Many (via `place_amenity` junction table)
+### Relationships Summary
+
+| Relationship | Type | Description |
+|--------------|------|-------------|
+| User → Places | One-to-Many | User owns many places |
+| User → Reviews | One-to-Many | User writes many reviews |
+| Place → Reviews | One-to-Many | Place has many reviews |
+| Place ↔ Amenity | Many-to-Many | Via `place_amenity` junction table |
 
 ---
 
-## Authentication
-
-### JWT Token Flow
-
-1. **Login**: `POST /api/v1/auth/login` with email and password
-2. **Receive Token**: Server returns JWT access token
-3. **Use Token**: Include in header: `Authorization: Bearer <token>`
-4. **Access Protected Routes**: Token is validated on each request
-
-### Token Structure
-```
-Header:    {"alg": "HS256", "typ": "JWT"}
-Payload:   {"identity": "user-id", "is_admin": false, "exp": timestamp}
-Signature: HMACSHA256(header + payload, JWT_SECRET_KEY)
-```
-
-### Password Security
-- Passwords are hashed using **Bcrypt** before storage
-- Minimum 6 characters required
-- Passwords are **never** returned in API responses
-
----
-
-## API Endpoints
-
-### Authentication
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/v1/auth/login` | User login, returns JWT | No |
-| GET | `/api/v1/auth/protected` | Test protected route | Yes |
-
-### Users
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/users/` | List all users | No |
-| GET | `/api/v1/users/<id>` | Get user by ID | No |
-| POST | `/api/v1/users/` | Create new user | No |
-| PUT | `/api/v1/users/<id>` | Update user | Yes |
-| DELETE | `/api/v1/users/<id>` | Delete user | Yes (Admin) |
-
-### Places
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/places/` | List all places | No |
-| GET | `/api/v1/places/<id>` | Get place by ID | No |
-| POST | `/api/v1/places/` | Create new place | Yes |
-| PUT | `/api/v1/places/<id>` | Update place | Yes (Owner/Admin) |
-| DELETE | `/api/v1/places/<id>` | Delete place | Yes (Owner/Admin) |
-
-### Reviews
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/reviews/` | List all reviews | No |
-| GET | `/api/v1/reviews/<id>` | Get review by ID | No |
-| POST | `/api/v1/reviews/` | Create new review | Yes |
-| PUT | `/api/v1/reviews/<id>` | Update review | Yes (Author/Admin) |
-| DELETE | `/api/v1/reviews/<id>` | Delete review | Yes (Author/Admin) |
-
-### Amenities
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/amenities/` | List all amenities | No |
-| GET | `/api/v1/amenities/<id>` | Get amenity by ID | No |
-| POST | `/api/v1/amenities/` | Create new amenity | Yes (Admin) |
-| PUT | `/api/v1/amenities/<id>` | Update amenity | Yes (Admin) |
-| DELETE | `/api/v1/amenities/<id>` | Delete amenity | Yes (Admin) |
-
----
-
-## Configuration
-
-### Environment Classes
-
-| Setting | Development | Testing | Production |
-|---------|-------------|---------|------------|
-| DEBUG | True | True | False |
-| JWT Expiration | 24 hours | 5 minutes | 1 hour |
-| Database | development.db | testing.db | PostgreSQL |
-| Secure Cookies | No | No | Yes |
-
-### Environment Variables
-```bash
-# Set these in production
-export SECRET_KEY="your-super-secret-key"
-export JWT_SECRET_KEY="your-jwt-secret-key"
-export DATABASE_URL="postgresql://user:pass@host/db"
-```
-
----
-
-## Installation & Setup
+## Installation
 
 ### Prerequisites
+
 - Python 3.8+
 - pip
 - Virtual environment (recommended)
 
-### Installation Steps
+### Setup Steps
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Alexpena76/holbertonschool-hbnb.git
 cd holbertonschool-hbnb/part4
 
-# 2. Create virtual environment
+# 2. Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Initialize the database
+# 4. Initialize the database with schema
 sqlite3 instance/development.db < schema.sql
 
-# 5. (Optional) Populate with test data
+# 5. Populate with test data (optional but recommended)
 sqlite3 instance/development.db < populate_test_data.sql
 
 # 6. Run the application
@@ -281,61 +281,271 @@ python run.py
 ```
 
 ### Access Points
-- **API Documentation (Swagger)**: http://127.0.0.1:5000/api/v1/
-- **Homepage**: http://127.0.0.1:5000/ (if frontend routes configured)
+
+| URL | Description |
+|-----|-------------|
+| http://127.0.0.1:5000/api/v1/ | Swagger API Documentation |
+| http://127.0.0.1:5000/api/v1/places/ | Places API |
+| http://127.0.0.1:5000/api/v1/users/ | Users API |
+
+---
+
+## Configuration
+
+### Environment Classes (config.py)
+
+| Setting | Development | Testing | Production |
+|---------|-------------|---------|------------|
+| `DEBUG` | True | True | False |
+| `JWT_ACCESS_TOKEN_EXPIRES` | 24 hours | 5 minutes | 1 hour |
+| `SQLALCHEMY_DATABASE_URI` | sqlite:///development.db | sqlite:///testing.db | PostgreSQL (env var) |
+| `SESSION_COOKIE_SECURE` | False | False | True |
+
+### Environment Variables
+
+```bash
+# Production settings (set these in your environment)
+export SECRET_KEY="your-very-secure-secret-key"
+export JWT_SECRET_KEY="your-jwt-secret-key"
+export DATABASE_URL="postgresql://user:password@host:port/database"
+```
+
+---
+
+## API Endpoints
+
+### Authentication (`/api/v1/auth`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/login` | Authenticate user, return JWT | No |
+| GET | `/protected` | Test protected route | Yes |
+
+### Users (`/api/v1/users`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/` | List all users | No |
+| POST | `/` | Create user | **Admin only** |
+| GET | `/<id>` | Get user by ID | No |
+| PUT | `/<id>` | Update user | Yes (self or Admin) |
+
+### Places (`/api/v1/places`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/` | List all places | No |
+| POST | `/` | Create place | Yes |
+| GET | `/<id>` | Get place by ID | No |
+| PUT | `/<id>` | Update place | Yes (owner or Admin) |
+
+### Reviews (`/api/v1/reviews`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/` | List all reviews | No |
+| POST | `/` | Create review | Yes |
+| GET | `/<id>` | Get review by ID | No |
+| PUT | `/<id>` | Update review | Yes (author or Admin) |
+| DELETE | `/<id>` | Delete review | Yes (author or Admin) |
+| GET | `/places/<place_id>/reviews` | Get reviews for place | No |
+
+### Amenities (`/api/v1/amenities`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/` | List all amenities | No |
+| POST | `/` | Create amenity | **Admin only** |
+| GET | `/<id>` | Get amenity by ID | No |
+| PUT | `/<id>` | Update amenity | **Admin only** |
+
+---
+
+## Authentication
+
+### JWT Token Flow
+
+```
+1. POST /api/v1/auth/login
+   Body: {"email": "user@example.com", "password": "password123"}
+   
+2. Response: {"access_token": "eyJhbGciOiJIUzI1NiIs..."}
+
+3. Use token in subsequent requests:
+   Header: Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+### Token Structure
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      JWT TOKEN                           │
+├─────────────────────────────────────────────────────────┤
+│ HEADER    │ {"alg": "HS256", "typ": "JWT"}              │
+├───────────┼─────────────────────────────────────────────┤
+│ PAYLOAD   │ {                                           │
+│           │   "identity": "user-uuid",                  │
+│           │   "is_admin": false,                        │
+│           │   "exp": 1234567890                         │
+│           │ }                                           │
+├───────────┼─────────────────────────────────────────────┤
+│ SIGNATURE │ HMACSHA256(header + payload, JWT_SECRET)    │
+└───────────┴─────────────────────────────────────────────┘
+```
+
+### Password Security
+
+Passwords are hashed using Bcrypt before storage:
+
+```python
+# Registration (user.py)
+def hash_password(self, password):
+    self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+# Login verification
+def verify_password(self, password):
+    return bcrypt.check_password_hash(self.password, password)
+```
+
+---
+
+## Authorization & Permissions
+
+### Role-Based Access Control
+
+| Action | Regular User | Admin |
+|--------|--------------|-------|
+| Create user | ❌ | ✅ |
+| Update own profile | ✅ | ✅ |
+| Update other's profile | ❌ | ✅ |
+| Change email/password | ❌ | ✅ |
+| Create place | ✅ | ✅ |
+| Update own place | ✅ | ✅ |
+| Update any place | ❌ | ✅ |
+| Create review | ✅ | ✅ |
+| Review own place | ❌ | ❌ |
+| Update own review | ✅ | ✅ |
+| Update any review | ❌ | ✅ |
+| Delete own review | ✅ | ✅ |
+| Delete any review | ❌ | ✅ |
+| Manage amenities | ❌ | ✅ |
+
+### Review Validation Rules
+
+1. **Cannot review own place**: Users cannot review places they own
+2. **One review per place**: Users can only review each place once
+
+---
+
+## Test Data
+
+After running `populate_test_data.sql`:
+
+### Users
+
+| Name | Email | Password | Admin |
+|------|-------|----------|-------|
+| Admin User | admin@hbnb.io | admin1234 | ✅ |
+| John Doe | john.doe@example.com | password123 | ❌ |
+| Jane Smith | jane.smith@example.com | password123 | ❌ |
+| Bob Wilson | bob.wilson@example.com | password123 | ❌ |
+| Alice Johnson | alice.johnson@example.com | password123 | ❌ |
+
+### Places
+
+| Title | Price | Owner |
+|-------|-------|-------|
+| Beautiful Beach House | $150 | Admin |
+| Cozy Mountain Cabin | $120 | John Doe |
+| Modern City Apartment | $200 | Jane Smith |
+| Lakefront Paradise | $180 | Bob Wilson |
+| Desert Oasis Villa | $250 | Alice Johnson |
+
+### Amenities
+
+WiFi, Swimming Pool, Air Conditioning, Parking, Kitchen, Gym, Hot Tub, TV
+
+### Reviews
+
+9 sample reviews distributed across places with ratings 3-5 stars.
 
 ---
 
 ## Testing
 
 ### Run All Tests
+
 ```bash
 python -m pytest tests/ -v
 ```
 
-### Run Specific Test Files
+### Run Specific Tests
+
 ```bash
-python -m pytest tests/test_user_endpoints.py -v
+# JWT authentication tests
 python -m pytest tests/test_jwt.py -v
-python -m pytest tests/test_passwords.py -v
+
+# User endpoint tests
+python -m pytest tests/test_user_endpoints.py -v
+
+# Admin functionality tests
+python -m pytest tests/test_admin_endpoints.py -v
 ```
 
-### Test Coverage
+### Manual JWT Test
+
 ```bash
-python -m pytest tests/ --cov=app --cov-report=html
+python tests/test_jwt.py
 ```
 
 ---
 
-## Test User Credentials
+## Frontend
 
-From `populate_test_data.sql`:
+### Current Implementation
 
-| Email | Password | Admin |
-|-------|----------|-------|
-| admin@hbnb.io | admin1234 | Yes |
-| john.doe@example.com | password123 | No |
-| jane.smith@example.com | password123 | No |
-| bob.wilson@example.com | password123 | No |
-| alice.johnson@example.com | password123 | No |
+The frontend consists of static HTML templates with CSS styling and JavaScript for login functionality.
+
+| File | Purpose |
+|------|---------|
+| `index.html` | Homepage with place cards (static) |
+| `login.html` | Login form with JavaScript validation |
+| `place.html` | Place details page (static) |
+| `add_review.html` | Review submission form |
+| `styles.css` | Complete responsive styling |
+| `script.js` | Login flow, JWT cookie management |
+
+### JavaScript Features (script.js)
+
+- Form validation (email format, required fields)
+- API login request handling
+- JWT token storage in cookies (7-day expiration)
+- Authentication status checking
+- Error/success message display
+- `authenticatedFetch()` helper for protected requests
+
+### Note on Frontend
+
+The HTML templates currently display **static/hardcoded data**. The API is fully functional and returns dynamic data from the database. To make the frontend dynamic, JavaScript would need to fetch data from the API endpoints.
 
 ---
 
 ## Design Patterns
 
 ### 1. Repository Pattern
-Abstracts data persistence, allowing easy swap between storage implementations.
+
+Abstracts data access, enabling easy swap between storage implementations.
 
 ```python
-# Base class in repository.py
+# Base class
 class SQLAlchemyRepository(Repository):
     def __init__(self, model):
-        self.model = model  # Receives model class (User, Place, etc.)
+        self.model = model
     
     def get_all(self):
         return self.model.query.all()
 
-# Specific repository extends it
+# Entity-specific repository
 class UserRepository(SQLAlchemyRepository):
     def __init__(self):
         super().__init__(User)  # Pass User model to parent
@@ -345,24 +555,45 @@ class UserRepository(SQLAlchemyRepository):
 ```
 
 ### 2. Facade Pattern
-Provides unified interface for business logic coordination.
+
+Provides a unified interface for business logic coordination.
 
 ```python
 class HBnBFacade:
     def __init__(self):
         self.user_repo = UserRepository()
         self.place_repo = PlaceRepository()
-        # ... coordinates all repositories
+        self.review_repo = ReviewRepository()
+        self.amenity_repo = AmenityRepository()
+    
+    def create_place(self, place_data):
+        # Validate owner exists
+        owner = self.user_repo.get(place_data['owner_id'])
+        if not owner:
+            raise ValueError('Owner not found')
+        # Create and save place
+        place = Place(**place_data)
+        self.place_repo.add(place)
+        return place
 ```
 
 ### 3. Factory Pattern
+
 Creates configured Flask application instances.
 
 ```python
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    # ... configure extensions and routes
+    
+    # Initialize extensions
+    bcrypt.init_app(app)
+    jwt.init_app(app)
+    db.init_app(app)
+    
+    # Register API namespaces
+    # ...
+    
     return app
 ```
 
@@ -371,51 +602,34 @@ def create_app(config_class="config.DevelopmentConfig"):
 ## Security Features
 
 ### SQL Injection Prevention
-SQLAlchemy ORM uses parameterized queries automatically:
+
+SQLAlchemy ORM uses parameterized queries:
+
 ```python
-# Safe - SQLAlchemy escapes input
-user = User.query.filter_by(email=email).first()
+# Safe - SQLAlchemy escapes all input
+user = User.query.filter_by(email=user_input).first()
+
+# Generates: SELECT * FROM users WHERE email = ? (parameterized)
 ```
 
 ### Password Security
-- Bcrypt hashing with salt
-- Minimum length validation
-- Passwords excluded from API responses via `to_dict()`
+
+- Bcrypt hashing with automatic salt
+- Minimum 6 character requirement
+- Passwords never returned in API responses (`to_dict()` excludes password)
 
 ### JWT Security
-- Tokens signed with secret key
-- Expiration timestamps
-- Admin claims for authorization
+
+- Tokens signed with secret key (HMAC-SHA256)
+- Configurable expiration times
+- Admin claims embedded in token
+- Automatic rejection of expired/invalid tokens
 
 ### Authorization Checks
-- Ownership verification for updates/deletes
-- Admin-only routes for amenity management
-- Prevention of ownership transfer attacks
 
----
-
-## Current Limitations
-
-- Frontend templates use static/hardcoded data (not fetching from API dynamically)
-- No image upload functionality
-- No search/filtering on places
-- No pagination for large result sets
-- No email verification
-- No password reset functionality
-
----
-
-## Future Improvements
-
-- [ ] Dynamic frontend with JavaScript API calls
-- [ ] Image uploads for places
-- [ ] Search and filtering
-- [ ] Pagination
-- [ ] Email verification
-- [ ] Password reset
-- [ ] Rate limiting
-- [ ] Caching layer
-- [ ] Docker containerization
+- Ownership verification before updates/deletes
+- Admin bypass for administrative actions
+- Prevention of ownership transfer attacks (owner_id stripped from updates)
 
 ---
 
