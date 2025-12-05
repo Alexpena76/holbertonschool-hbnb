@@ -522,11 +522,6 @@ The frontend consists of static HTML templates with CSS styling and JavaScript f
 - JWT token storage in cookies (7-day expiration)
 - Authentication status checking
 - Error/success message display
-- `authenticatedFetch()` helper for protected requests
-
-### Note on Frontend
-
-The HTML templates currently display **static/hardcoded data**. The API is fully functional and returns dynamic data from the database. To make the frontend dynamic, JavaScript would need to fetch data from the API endpoints.
 
 ---
 
