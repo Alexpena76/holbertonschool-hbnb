@@ -508,9 +508,9 @@ The frontend consists of static HTML templates with CSS styling and JavaScript f
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Homepage with place cards (static) |
+| `index.html` | Homepage with place cards |
 | `login.html` | Login form with JavaScript validation |
-| `place.html` | Place details page (static) |
+| `place.html` | Place details page |
 | `add_review.html` | Review submission form |
 | `styles.css` | Complete responsive styling |
 | `script.js` | Login flow, JWT cookie management |
