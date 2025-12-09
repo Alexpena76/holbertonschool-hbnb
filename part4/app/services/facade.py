@@ -316,7 +316,7 @@ class HBnBFacade:
             amenity.name = amenity._validate_name(new_name)
         
         # SQLALCHEMY MAPPING: Commit changes to database
-        self.amenity_repo.update(amenity_id, amenity)
+        amenity.save()
         return amenity
     
     # ==================== PLACE METHODS ====================

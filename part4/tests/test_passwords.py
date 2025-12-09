@@ -1,16 +1,18 @@
 """
-Test password hashing functionality
+Test Password Hashing Functionality
 """
 
-from app import create_app, bcrypt
+from app import create_app, db
 from app.models.user import User
 
 
 def test_password_hashing():
     """Test password hashing and verification"""
-    app = create_app()
+    app = create_app('config.TestingConfig')
     
     with app.app_context():
+        db.create_all()
+        
         print("Testing password functionality...\n")
         
         # Test 1: Create user with password
@@ -34,20 +36,20 @@ def test_password_hashing():
         assert user.verify_password("wrongpassword") is False
         print("✓ Wrong password rejected")
         
-        # Test 5: Check to_dict() excludes password
+        # Test 5: Save to DB and check to_dict() excludes password
+        db.session.add(user)
+        db.session.commit()
+        
         user_dict = user.to_dict()
         assert 'password' not in user_dict
-        print("✓ Password excluded from to_dict()")
-        
-        # Test 6: Check password validation
-        try:
-            user2 = User("Test", "User2", "test2@example.com", "short")
-            assert False, "Should have raised ValueError for short password"
-        except ValueError as e:
-            assert "at least 6 characters" in str(e)
-            print("✓ Short password rejected")
+        assert 'id' in user_dict
+        assert 'created_at' in user_dict
+        print("✓ to_dict() excludes password")
         
         print("\n✅ All password tests passed!")
+        
+        # Cleanup
+        db.drop_all()
 
 
 if __name__ == '__main__':

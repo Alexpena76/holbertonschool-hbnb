@@ -1,124 +1,146 @@
 """
-Unit tests for Amenity endpoints
+Test Amenity API Endpoints
 """
 
 import unittest
-import sys
-import os
-
-# Add the parent directory to the path to import app
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from app import create_app
 import json
+from app import create_app, db
+from flask_jwt_extended import create_access_token
 
 
 class TestAmenityEndpoints(unittest.TestCase):
-    """Test cases for Amenity API endpoints"""
+    """Test cases for amenity endpoints"""
     
     def setUp(self):
-        """Set up test client before each test"""
-        self.app = create_app()
+        """Set up test fixtures"""
+        self.app = create_app('config.TestingConfig')
         self.client = self.app.test_client()
-        self.app.testing = True
-
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
+        
+        # Create admin token for protected routes
+        self.admin_token = create_access_token(
+            identity='admin-test-id',
+            additional_claims={'is_admin': True}
+        )
+        self.admin_headers = {
+            'Authorization': f'Bearer {self.admin_token}',
+            'Content-Type': 'application/json'
+        }
+    
+    def tearDown(self):
+        """Clean up after tests"""
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+    
     def test_create_amenity_success(self):
         """Test successful amenity creation"""
         response = self.client.post('/api/v1/amenities',
-            json={"name": "WiFi Test"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "WiFi Test"})
         
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
-        self.assertIn('id', data)
         self.assertEqual(data['name'], 'WiFi Test')
-        print(f"✓ Created amenity: {data['id']}")
-
+    
     def test_create_amenity_empty_name(self):
         """Test amenity creation with empty name"""
         response = self.client.post('/api/v1/amenities',
-            json={"name": ""},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": ""})
         
         self.assertEqual(response.status_code, 400)
-        print("✓ Empty amenity name rejected")
-
+    
     def test_create_amenity_whitespace_name(self):
         """Test amenity creation with whitespace-only name"""
         response = self.client.post('/api/v1/amenities',
-            json={"name": "   "},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "   "})
         
         self.assertEqual(response.status_code, 400)
-        print("✓ Whitespace amenity name rejected")
-
+    
     def test_create_amenity_duplicate_name(self):
         """Test amenity creation with duplicate name"""
         # Create first amenity
         self.client.post('/api/v1/amenities',
-            json={"name": "Duplicate Test"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "Duplicate Test"})
         
         # Try to create duplicate
         response = self.client.post('/api/v1/amenities',
-            json={"name": "Duplicate Test"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "Duplicate Test"})
         
         self.assertEqual(response.status_code, 400)
-        print("✓ Duplicate amenity name rejected")
-
+    
+    def test_create_amenity_without_admin(self):
+        """Test that non-admin cannot create amenities"""
+        regular_token = create_access_token(
+            identity='regular-user-id',
+            additional_claims={'is_admin': False}
+        )
+        regular_headers = {
+            'Authorization': f'Bearer {regular_token}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = self.client.post('/api/v1/amenities',
+            headers=regular_headers,
+            json={"name": "Test Amenity"})
+        
+        self.assertEqual(response.status_code, 403)
+    
+    def test_get_all_amenities(self):
+        """Test retrieving all amenities"""
+        response = self.client.get('/api/v1/amenities')
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(json.loads(response.data), list)
+    
+    def test_get_amenity_not_found(self):
+        """Test retrieving non-existent amenity"""
+        response = self.client.get('/api/v1/amenities/nonexistent-id')
+        
+        self.assertEqual(response.status_code, 404)
+    
     def test_get_amenity_success(self):
         """Test retrieving an existing amenity"""
         # Create amenity first
         create_response = self.client.post('/api/v1/amenities',
-            json={"name": "Pool Test"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "Pool Test"})
         
+        self.assertEqual(create_response.status_code, 201)
         amenity_id = json.loads(create_response.data)['id']
         
         # Get the amenity
         response = self.client.get(f'/api/v1/amenities/{amenity_id}')
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(data['id'], amenity_id)
-        print(f"✓ Retrieved amenity: {amenity_id}")
-
-    def test_get_amenity_not_found(self):
-        """Test retrieving a non-existent amenity"""
-        response = self.client.get('/api/v1/amenities/nonexistent-id-12345')
-        self.assertEqual(response.status_code, 404)
-        print("✓ Non-existent amenity returns error")
-
-    def test_get_all_amenities(self):
-        """Test retrieving all amenities"""
-        # Create an amenity first
-        self.client.post('/api/v1/amenities',
-            json={"name": "Parking Test"},
-            content_type='application/json')
         
-        response = self.client.get('/api/v1/amenities')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
-        self.assertIsInstance(data, list)
-        print(f"✓ Retrieved {len(data)} amenities")
-
+        self.assertEqual(data['name'], 'Pool Test')
+    
     def test_update_amenity_success(self):
         """Test successful amenity update"""
         # Create amenity first
         create_response = self.client.post('/api/v1/amenities',
-            json={"name": "Original Amenity"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "Original Amenity"})
         
+        self.assertEqual(create_response.status_code, 201)
         amenity_id = json.loads(create_response.data)['id']
         
         # Update the amenity
         response = self.client.put(f'/api/v1/amenities/{amenity_id}',
-            json={"name": "Updated Amenity"},
-            content_type='application/json')
+            headers=self.admin_headers,
+            json={"name": "Updated Amenity"})
         
         self.assertEqual(response.status_code, 200)
-        print(f"✓ Updated amenity: {amenity_id}")
+        data = json.loads(response.data)
+        self.assertEqual(data['name'], 'Updated Amenity')
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    unittest.main()
